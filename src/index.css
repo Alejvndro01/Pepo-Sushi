@@ -1,0 +1,60 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  /* Enlaces de navegación con efecto de subrayado animado */
+  .nav-link {
+    @apply relative transition-colors duration-300;
+  }
+  .nav-link::after {
+    content: '';
+    @apply absolute left-0 -bottom-1.5 w-0 h-[2px] bg-brand-indigo transition-all duration-300 ease-in-out;
+  }
+  .nav-link:hover::after,
+  .nav-link.active::after {
+    @apply w-full;
+  }
+  .nav-link.active {
+    @apply text-brand-indigo;
+  }
+
+  /* Botones - Efectos de elevación y sombra */
+  .btn-add {
+    @apply transition-all duration-300 ease-in-out hover:-translate-y-[2px] hover:shadow-[0_8px_20px_rgba(35,67,134,0.25)];
+  }
+
+  .cta-pill {
+    @apply transition-all duration-300 ease-in-out hover:-translate-y-[3px] hover:scale-105 hover:shadow-[0_12px_30px_rgba(35,67,134,0.4)];
+  }
+
+  /* Tarjetas de producto - Efecto de hover y zoom en imagen */
+  .product-card {
+    @apply transition-transform duration-300 ease-in-out hover:-translate-y-1.5 shadow-card;
+  }
+  
+  .img-container {
+    @apply overflow-hidden rounded-t-[8px];
+  }
+  
+  .img-container img {
+    @apply transition-transform duration-700 ease-in-out;
+  }
+  
+  .product-card:hover .img-container img {
+    @apply scale-105;
+  }
+}
+
+@layer utilities {
+  /* Wave divider - Posicionamiento de SVG */
+  .wave-top {
+    @apply absolute -top-px left-0 w-full overflow-hidden leading-none;
+  }
+  .wave-top svg {
+    @apply relative block w-[calc(100%+1.3px)] h-[80px];
+  }
+  .wave-top .shape-fill {
+    fill: theme('colors.brand.cream');
+  }
+}
