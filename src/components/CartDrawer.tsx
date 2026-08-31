@@ -1,3 +1,4 @@
+// src/components/CartDrawer.tsx
 import { useState, useEffect } from 'react';
 import { X, Minus, Plus, Trash2, Clock, CheckCircle2 } from 'lucide-react';
 import { useCart } from '../hooks/useCart';
@@ -24,7 +25,6 @@ export const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
   const [payment, setPayment] = useState<PaymentOption>('Pago en tienda');
   const [itemNotes, setItemNotes] = useState<Record<string, string>>({});
   
-  // Estado para el Modal de Confirmación y LocalStorage de Historial
   const [isConfirmed, setIsConfirmed] = useState(false);
   const [pastOrders, setPastOrders] = useState<PastOrder[]>([]);
 
@@ -61,17 +61,33 @@ export const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
     message += `*Pago:* ${payment}\n\n`;
     message += `¡Quedo atento/a para coordinar!`;
 
-    // Guardar en Historial (LocalStorage)
-    const newOrder: PastOrder = {
+    // 1. Guardar en Historial del Cliente
+    const newHistoryOrder: PastOrder = {
       date: new Date().toLocaleDateString('es-CL', { hour: '2-digit', minute: '2-digit' }),
       items: items.map(i => ({ name: i.name, quantity: i.quantity, price: i.price })),
       total: totalPrice
     };
-    const updatedHistory = [newOrder, ...pastOrders.slice(0, 4)]; // Guardar últimos 5
+    const updatedHistory = [newHistoryOrder, ...pastOrders.slice(0, 4)];
     setPastOrders(updatedHistory);
     localStorage.setItem('pepo_past_orders', JSON.stringify(updatedHistory));
 
-    // Mostrar Modal de Confirmación Interna
+    // 2. INYECTAR EN EL PANEL DE PEDIDOS KDS (Simulación en tiempo real)
+    const savedKdsOrders = JSON.parse(localStorage.getItem('pepo_orders') || '[]');
+    const newKdsOrder = {
+      id: Date.now().toString(),
+      timestamp: Date.now(),
+      cliente: delivery === 'Delivery' ? 'Delivery Web' : 'Retiro Web',
+      items: items.map(i => ({
+        id: i.id,
+        nombre: i.name + (itemNotes[i.id] ? ` (${itemNotes[i.id]})` : ''),
+        cantidad: i.quantity,
+        precio: i.price
+      })),
+      total: totalPrice,
+      estado: 'pendiente'
+    };
+    localStorage.setItem('pepo_orders', JSON.stringify([...savedKdsOrders, newKdsOrder]));
+
     setIsConfirmed(true);
 
     const params = new URLSearchParams({
@@ -79,7 +95,6 @@ export const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
       text: message
     });
 
-    // Abrir WhatsApp tras un breve feedback visual
     setTimeout(() => {
       window.open(`https://api.whatsapp.com/send?${params.toString()}`, '_blank', 'noopener,noreferrer');
       setIsConfirmed(false);
@@ -102,7 +117,6 @@ export const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
           </button>
         </header>
 
-        {/* Modal de Confirmación Interno */}
         {isConfirmed ? (
           <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-brand-cream animate-fadeIn">
             <CheckCircle2 size={64} className="text-emerald-500 mb-4 animate-bounce" />
@@ -111,7 +125,6 @@ export const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
           </div>
         ) : (
           <div className="flex-1 overflow-y-auto p-6 space-y-6">
-            {/* Lista de productos con Notas Personalizadas */}
             {items.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-48 text-brand-indigo/50 space-y-3">
                 <span className="text-5xl">🥢</span>
@@ -140,7 +153,6 @@ export const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
                       </div>
                     </div>
 
-                    {/* Campo de notas personalizadas */}
                     <input 
                       type="text"
                       placeholder="Ej: Sin cebollín, salsa extra..."
@@ -153,7 +165,6 @@ export const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
               </div>
             )}
 
-            {/* Historial de Pedidos Recientes (LocalStorage) */}
             {pastOrders.length > 0 && (
               <div className="pt-4 border-t border-black/10">
                 <p className="font-nav text-[10px] text-brand-indigo/60 tracking-widest uppercase mb-3 flex items-center gap-1.5">
@@ -174,7 +185,6 @@ export const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
           </div>
         )}
 
-        {/* Footer de Opciones y Checkout */}
         {!isConfirmed && (
           <footer className="border-t border-black/10 bg-white/50 p-6 flex flex-col gap-4">
             <div className="grid grid-cols-2 gap-4">

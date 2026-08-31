@@ -1,7 +1,8 @@
 // src/pages/AdminDashboard.tsx
 import { useState } from 'react';
-import { Lock, LogOut, ArrowLeft, ShieldAlert } from 'lucide-react';
+import { Lock, LogOut, ArrowLeft, ShieldAlert, LayoutGrid, ClipboardList } from 'lucide-react';
 import { AdminPanel } from '../components/AdminPanel';
+import { OrdersPanel } from '../components/OrdersPanel';
 import { Product, menu as initialMenu } from '../data/menu';
 
 interface AdminDashboardProps {
@@ -9,7 +10,6 @@ interface AdminDashboardProps {
 }
 
 export const AdminDashboard = ({ onBackToSite }: AdminDashboardProps) => {
-  // Clave segura obtenida desde las variables de entorno de Vite
   const ADMIN_SECRET_KEY = import.meta.env.VITE_ADMIN_PASSWORD || 'peposushi2026';
   
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
@@ -17,6 +17,9 @@ export const AdminDashboard = ({ onBackToSite }: AdminDashboardProps) => {
   });
   const [passwordInput, setPasswordInput] = useState('');
   const [error, setError] = useState(false);
+  
+  // Estado para controlar qué pestaña ve el administrador
+  const [activeTab, setActiveTab] = useState<'pedidos' | 'menu'>('pedidos');
 
   const [products, setProducts] = useState<Product[]>(() => {
     const saved = localStorage.getItem('pepo_menu_admin');
@@ -61,7 +64,6 @@ export const AdminDashboard = ({ onBackToSite }: AdminDashboardProps) => {
     return (
       <div className="min-h-screen bg-brand-cream flex items-center justify-center p-4">
         <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl p-6 sm:p-8 border border-black/10 relative">
-          
           <button 
             onClick={onBackToSite}
             className="absolute top-5 left-5 text-brand-indigo/60 hover:text-brand-indigo flex items-center gap-1 font-nav text-xs tracking-wider"
@@ -111,7 +113,7 @@ export const AdminDashboard = ({ onBackToSite }: AdminDashboardProps) => {
 
   return (
     <div className="min-h-screen bg-brand-cream flex flex-col">
-      <header className="bg-brand-indigo text-white px-4 sm:px-8 py-3.5 flex items-center justify-between shadow-md gap-2">
+      <header className="bg-brand-indigo text-white px-4 sm:px-8 py-3.5 flex items-center justify-between shadow-md gap-2 relative z-10">
         <div className="flex items-center gap-3">
           <button 
             onClick={onBackToSite}
@@ -119,7 +121,23 @@ export const AdminDashboard = ({ onBackToSite }: AdminDashboardProps) => {
           >
             <ArrowLeft size={16} /> <span className="hidden sm:inline">Ver Carta</span>
           </button>
-          <h2 className="font-display text-lg sm:text-2xl tracking-wide truncate">Gestión Pepo Sushi</h2>
+          <h2 className="font-display text-lg sm:text-2xl tracking-wide truncate">Pepo Sushi</h2>
+        </div>
+
+        {/* Pestañas Desktop */}
+        <div className="hidden md:flex bg-black/20 p-1 rounded-xl">
+          <button 
+            onClick={() => setActiveTab('pedidos')}
+            className={`px-4 py-2 rounded-lg font-nav text-xs tracking-widest uppercase flex items-center gap-2 transition-all ${activeTab === 'pedidos' ? 'bg-white text-brand-indigo shadow-sm' : 'text-white/70 hover:text-white'}`}
+          >
+            <ClipboardList size={16} /> KDS Pedidos
+          </button>
+          <button 
+            onClick={() => setActiveTab('menu')}
+            className={`px-4 py-2 rounded-lg font-nav text-xs tracking-widest uppercase flex items-center gap-2 transition-all ${activeTab === 'menu' ? 'bg-white text-brand-indigo shadow-sm' : 'text-white/70 hover:text-white'}`}
+          >
+            <LayoutGrid size={16} /> Menú y Stock
+          </button>
         </div>
 
         <button 
@@ -130,13 +148,35 @@ export const AdminDashboard = ({ onBackToSite }: AdminDashboardProps) => {
         </button>
       </header>
 
-      <main className="flex-1 p-3 sm:p-6 lg:p-10 max-w-7xl mx-auto w-full">
-        <div className="bg-white rounded-2xl shadow-xl border border-black/10 overflow-hidden">
-          <AdminPanel 
-            products={products}
-            onSaveProduct={handleSaveProduct}
-            onDeleteProduct={handleDeleteProduct}
-          />
+      {/* Pestañas Mobile */}
+      <div className="md:hidden flex bg-brand-indigo p-2 pt-0 z-10">
+         <div className="flex w-full bg-black/20 p-1 rounded-xl">
+          <button 
+            onClick={() => setActiveTab('pedidos')}
+            className={`flex-1 py-2 rounded-lg font-nav text-[10px] tracking-widest uppercase flex justify-center items-center gap-2 transition-all ${activeTab === 'pedidos' ? 'bg-white text-brand-indigo shadow-sm' : 'text-white/70'}`}
+          >
+            <ClipboardList size={14} /> Pedidos
+          </button>
+          <button 
+            onClick={() => setActiveTab('menu')}
+            className={`flex-1 py-2 rounded-lg font-nav text-[10px] tracking-widest uppercase flex justify-center items-center gap-2 transition-all ${activeTab === 'menu' ? 'bg-white text-brand-indigo shadow-sm' : 'text-white/70'}`}
+          >
+            <LayoutGrid size={14} /> Menú
+          </button>
+        </div>
+      </div>
+
+      <main className="flex-1 p-3 sm:p-6 lg:p-8 max-w-[1600px] mx-auto w-full">
+        <div className="bg-white rounded-2xl shadow-xl border border-black/10 overflow-hidden h-full">
+          {activeTab === 'menu' ? (
+            <AdminPanel 
+              products={products}
+              onSaveProduct={handleSaveProduct}
+              onDeleteProduct={handleDeleteProduct}
+            />
+          ) : (
+            <OrdersPanel />
+          )}
         </div>
       </main>
     </div>

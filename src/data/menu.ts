@@ -136,7 +136,7 @@ export const menu: Product[] = [
 // --- INFORMACIÓN DEL LOCAL ---
 export const storeInfo = {
   nombre: "Pepo Sushi",
-  telefono: "+56977831766", // Reemplazar con el número real de Hualqui
+  telefono: "+56963558009", // Reemplazar con el número real de Hualqui
   email: "contacto@peposushi.cl",
   instagram: "@peposushi.hualqui",
   ubicacion: "Hualqui, Región del Biobío",
